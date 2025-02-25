@@ -1,74 +1,255 @@
-# Project: Command Pattern and Plugins Homework 5
+# Interactive Command-Line Calculator with Plugin Architecture
 
-## Introduction
+This project demonstrates a **plugin-based** command pattern architecture in Python, featuring a REPL (Read-Eval-Print Loop), robust error handling, and 100% test coverage with **pytest**.
 
-This project focuses on the development of an interactive command-line application that operates continuously, transitioning from a single-execution script to a fully functional application. Through this assignment, you will explore the command pattern, learn how to dynamically load commands using a simple plugin architecture, and understand the appropriate use of exceptions versus conditional statements to manage invalid data inputs. This unit lays the foundational skills for application development, preparing you for the midterm project, which requires a thorough explanation of your program's architecture, design patterns, and functionality.
+---
 
-## Project Enhancements from Assignment 4
+## Table of Contents
 
-Incorporate the functionalities discussed in the lecture videos to your previous assignment. This includes transforming your calculator program into an interactive application using the command pattern and REPL (Read, Evaluate, Print, Loop) principles.
+1. [Overview](#overview)  
+2. [Key Features](#key-features)  
+3. [Project Structure](#project-structure)  
+4. [Installation](#installation)  
+5. [Usage](#usage)  
+6. [Plugin Architecture](#plugin-architecture)  
+7. [Testing](#testing)  
+8. [Contributing](#contributing)  
+9. [License](#license)
 
-### Submission Requirements
+---
 
-1. **Initial Setup:**
-   - Watch the lecture on the main/command branch, which covers REPL and the command pattern. [Instructor Video: Command Pattern Lecture](https://youtu.be/3DVUN091T5g). Integrate these concepts with your existing program to add four basic commands: add, subtract, multiply, and divide, making your calculator interactive.
+## Overview
 
-2. **(Bonus) Implement a Menu Command:**
-   - Create a menu command that displays available commands from the command dictionary at the application's start and when the user types "menu." This is a self-guided challenge to deepen your understanding of dynamic command integration.
+This calculator runs continuously in a REPL, enabling you to type commands such as `add`, `subtract`, `multiply`, `divide`, and `menu`. Each command is implemented as a **plugin** in the `app/commands/` folder. New commands can be easily added by dropping in a new file that implements the **command interface**.
 
-3. **Testing and Code Coverage:**
-   - With the calculator commands integrated, update and expand your tests to achieve 100% test coverage, ensuring your program's functionality is fully verified.
+**Goals**:
 
-4. **Plugin Architecture:**
-   - View the lecture on implementing plugins [Instructor Video: Plugins Lecture](https://youtu.be/c2PmjazGW2w). Learn to refactor your program to automatically load plugins, facilitating easy command additions without manual updates.
+- Provide a **clean plugin architecture** (via Python’s `pkgutil` and reflection).
+- Handle **errors** gracefully: invalid arguments, invalid numeric input, division by zero, unknown commands, etc.
+- Achieve **100% coverage** for all code, including REPL logic and plugin commands.
 
-5. **(Bonus) Explore Multiprocessing Capabilities:**
-   - Investigate adding multiprocessing features to enable commands/plugins to run on separate cores. This enhancement is a forward-looking feature that prepares your application for future scalability and performance improvements.
+---
 
-## Grading Rubric (Total: 100 Points)
+## Key Features
 
-- **Testing (50 Points):**
-  - Comprehensive test coverage near 100% average coverage: 50 Points
+1. **Continuous REPL**:  
+   - Type commands at the `>>>` prompt.  
+   - Type `exit` to quit.
 
-- **Functionality (50 Points):**
-  - Implementation of command pattern and REPL: 10 Points
-  - Interactive calculator commands (add, subtract, multiply, divide): 20 Points
-  - Successful plugin architecture integration for dynamic command loading: 20 
-Ensure that the functionality aligns with the requirements and demonstrates the effective use of the command pattern and plugin architecture as outlined in the instructor videos.
+2. **Basic Arithmetic Commands**:  
+   - `add <x> <y>` → outputs `x + y = result`  
+   - `subtract <x> <y>` → outputs `x - y = result`  
+   - `multiply <x> <y>` → outputs `x * y = result`  
+   - `divide <x> <y>` → outputs `x / y = result`  
+   - Zero-division triggers a specific error message.
 
-## Recommended Viewing
+3. **Menu Command**:  
+   - `menu` → lists all available commands dynamically discovered via the **PluginManager**.
 
-To complement the project work, the following videos are highly recommended:
+4. **Plugin Architecture**:  
+   - Each command is a self-contained `.py` file in `app/commands/`.
+   - **PluginManager** automatically discovers and registers them, no need to modify the main application.
 
-1. [Python Loop Performance](https://www.youtube.com/watch?v=Qgevy75co8c) - Insights into loop efficiency.
-2. [Habits of The Good Programmer](https://www.youtube.com/watch?v=q1qKv5TBaOA&t=2s) - Design patterns and best practices.
-3. [Global Interpreter Lock and Multicore Issues in Python](https://www.youtube.com/watch?v=m4zDBk0zAUY) - Python concurrency explained by its inventor.
-4. [Design Patterns Explained](https://www.youtube.com/watch?v=tv-_1er1mWI) - General programming design patterns.
-5. [5 Patterns in Python](https://www.youtube.com/watch?v=YMAwgRwjEOQ) - Applying patterns in Python.
+5. **Robust Error Handling**:  
+   - Usage errors (wrong number of arguments) → `ValueError`.  
+   - Invalid numeric input → `ValueError`.  
+   - Divide by zero → `ZeroDivisionError`.  
+   - Unknown command → “Unknown command. Type 'menu' to see available commands, or 'exit' to quit.”  
+   - Unexpected errors → Caught and printed to `stderr`.
 
-## Project Setup
+6. **100% Test Coverage**:  
+   - **Unit tests** for each command.  
+   - **Integration tests** for the REPL (via monkeypatching user input).  
+   - Coverage measured by `pytest-cov`.
 
-1. Clone the repository.
-2. CD into the project folder.
-3. Create and activate the virtual environment (VE).
-4. Install the required libraries.
+---
 
-## Testing Commands
+## Project Structure
 
-- Run all tests with `pytest`.
-- To test a specific file, use `pytest tests/test_main.py`.
-- For linting and coverage, `pytest --pylint --cov` commands can be used separately.
+```
+calc_design_patterns/
+├── .github/
+│   └── workflows/
+│       └── python-app.yml        # GitHub Actions CI
+├── app/
+│   ├── __init__.py               # Exports the App
+│   ├── app.py                    # REPL code
+│   └── commands/
+│       ├── __init__.py
+│       ├── add_command.py
+│       ├── subtract_command.py
+│       ├── multiply_command.py
+│       ├── divide_command.py
+│       ├── menu_command.py
+│       ├── command_interface.py  # Abstract base for commands
+│       └── plugin_manager.py     # Auto-discovers commands
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_app.py               # Integration tests for the REPL
+│   └── test_commands.py          # Unit tests for each command
+├── .coveragerc                   # Coverage config
+├── .gitignore
+├── .pylintrc                     # Pylint config
+├── main.py                       # Entry point (calls App.start())
+├── pytest.ini                    # Pytest config
+├── readme.md                     # (This file)
+└── requirements.txt              # Dependencies
+```
 
-## Installed Libraries
+---
 
-1. [Pytest](https://docs.pytest.org/en/8.0.x/)
-2. [Faker](https://faker.readthedocs.io/en/master/)
-3. [Pytest Coverage](https://pytest-cov.readthedocs.io/en/latest/readme.html)
-4. [Pytest Pylint](https://pylint.readthedocs.io/en/stable/development_guide/contributor_guide/tests/launching_test.html)
+## Installation
 
-## Adding a Library
+1. **Clone** or download the repository:
+   ```bash
+   git clone url
+   cd calc_design_patterns
+   ```
 
-1. Ensure you're in the correct VE; if unsure, run "deactivate".
-2. Activate the VE.
-3. Update the requirements file with `pip freeze > requirements.txt`.
+2. **Create and activate** a virtual environment (optional but recommended):
+   ```bash
+   python -m venv homework5
+   source homework5/bin/activate
+   ```
 
+3. **Install** the required packages:
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+---
+
+## Usage
+
+1. **Run** the calculator:
+   ```bash
+   python main.py
+   ```
+2. You’ll see:
+   ```
+   Welcome to the Interactive Calculator. Type 'exit' to exit.
+   >>>
+   ```
+3. **Try out** commands:
+   - `add 5 3`  
+   - `subtract 9 4`  
+   - `multiply 4 5`  
+   - `divide 20 4`  
+   - `menu`  
+   - `exit`
+
+4. **Sample Session**:
+   ```
+   >>> add 5 3
+   5.0 + 3.0 = 8.0
+   >>> divide 5 0
+   Error: Cannot divide by zero.
+   >>> add abc 2
+   Error: Invalid numeric input for add command.
+   >>> menu
+   Available commands: add, divide, menu, multiply, subtract
+   >>> exit
+   Exiting the interactive calculator...
+   ```
+
+---
+
+## Plugin Architecture
+
+- **PluginManager** (`plugin_manager.py`) scans the `app/commands` folder to discover classes that implement `CommandInterface`.
+- Each command is a class with:
+  - A `name` property  
+  - An `execute(args: list[str]) -> str` method  
+- **Adding a new command**:
+  1. Create a new file in `app/commands/`, e.g. `mycool_command.py`.
+  2. Implement `CommandInterface`:
+     ```python
+     from app.commands.command_interface import CommandInterface
+
+     class MyCoolCommand(CommandInterface):
+         @property
+         def name(self) -> str:
+             return "mycool"
+
+         def execute(self, args: list[str]) -> str:
+             # Your logic
+             return "You ran mycool!"
+     ```
+  3. **Done!** The REPL will now recognize `mycool` automatically.
+
+---
+
+## Testing
+
+1. Run all tests with:
+   ```bash
+   pytest
+   ```
+
+tests/test_app.py::test_app_unknown_then_valid_command PASSED                                 [  4%]
+tests/test_app.py::test_command_interface_abstract_methods PASSED                             [  8%]
+tests/test_app.py::test_app_divide_by_zero PASSED                                             [ 13%]
+tests/test_app.py::test_app_value_error PASSED                                                [ 17%]
+tests/test_app.py::test_app_unexpected_error PASSED                                           [ 21%]
+tests/test_app.py::test_app_empty_input PASSED                                                [ 26%]
+tests/test_app.py::test_app_start_exit_command PASSED                                         [ 30%]
+tests/test_app.py::test_app_start_unknown_command PASSED                                      [ 34%]
+tests/test_commands.py::test_add_command_success PASSED                                       [ 39%]
+tests/test_commands.py::test_add_command_invalid_args_count PASSED                            [ 43%]
+tests/test_commands.py::test_add_command_invalid_numeric PASSED                               [ 47%]
+tests/test_commands.py::test_subtract_command_success PASSED                                  [ 52%]
+tests/test_commands.py::test_subtract_command_invalid_args_count PASSED                       [ 56%]
+tests/test_commands.py::test_subtract_command_invalid_numeric PASSED                          [ 60%]
+tests/test_commands.py::test_multiply_command_success PASSED                                  [ 65%]
+tests/test_commands.py::test_multiply_command_invalid_args_count PASSED                       [ 69%]
+tests/test_commands.py::test_multiply_command_invalid_numeric PASSED                          [ 73%]
+tests/test_commands.py::test_divide_command_success PASSED                                    [ 78%]
+tests/test_commands.py::test_divide_command_invalid_args_count PASSED                         [ 82%]
+tests/test_commands.py::test_divide_command_invalid_numeric PASSED                            [ 86%]
+tests/test_commands.py::test_divide_command_zero_division PASSED                              [ 91%]
+tests/test_commands.py::test_menu_command_success PASSED                                      [ 95%]
+tests/test_commands.py::test_menu_command_with_args PASSED    
+
+2. Check **coverage** with:
+   ```bash
+   pytest --cov=app --cov-report=term-missing
+   ```
+3. **Expected Output** if successful:
+   ```
+Name                                Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------
+app/__init__.py                         2      0   100%
+app/app.py                             32      0   100%
+app/commands/__init__.py                0      0   100%
+app/commands/add_command.py            15      0   100%
+app/commands/command_interface.py       9      0   100%
+app/commands/divide_command.py         17      0   100%
+app/commands/menu_command.py           12      0   100%
+app/commands/multiply_command.py       15      0   100%
+app/commands/plugin_manager.py         23      0   100%
+app/commands/subtract_command.py       15      0   100%
+-----------------------------------------------------------------
+TOTAL                                 140      0   100%
+   ```
+
+- **Continuous Integration** is configured via GitHub Actions in `.github/workflows/python-app.yml`, which runs the above commands on every push/pull request.
+
+---
+
+## Contributing
+
+1. **Fork** this repository.  
+2. Create a **feature branch**.  
+3. Add or update commands, fix bugs, or improve tests.  
+4. **Make sure** tests and linter checks pass:
+   ```bash
+   pytest --cov=app --cov-report=term-missing
+   pylint app tests
+   ```
+5. Submit a **pull request**.
+
+### Code Style
+
+- This project uses **pylint**.

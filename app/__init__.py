@@ -1,15 +1,6 @@
-class App:
-    @staticmethod
-    def start() -> None:
-        print("Hello World. Type 'exit' to exit.")
-        
-        while True:
-            user_input = input(">>> ")
-            if user_input.lower() == "exit":
-                print("Exiting...")
-                break
-            else:
-                # Here, you could add additional commands and their handling
-                print("Unknown command. Type 'exit' to exit.")
+"""
+The 'app' package handles the core logic of the calculator's REPL and plugin management.
+"""
+from .app import App
 
-        
+__all__ = ["App"]
