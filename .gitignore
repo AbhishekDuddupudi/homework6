@@ -1,4 +1,12 @@
-*.sw*
+# .gitignore
+
+__pycache__/
+*.pyc
+*.pyo
+
+
 .coverage
-.pytest_cache
-*__pycache__
+.pytest_cache/
+
+.env
+
